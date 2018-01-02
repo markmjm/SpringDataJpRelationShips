@@ -1,14 +1,22 @@
 package com.mjm.jpaassociation;
 
+import com.mjm.jpaassociation.manytomany.entities.Programmer;
+import com.mjm.jpaassociation.manytomany.entities.Project;
+import com.mjm.jpaassociation.manytomany.repos.ProgrammerRespository;
 import com.mjm.jpaassociation.onetomany.entities.Customer;
 import com.mjm.jpaassociation.onetomany.entities.PhoneNumber;
 import com.mjm.jpaassociation.onetomany.repos.CustomerRepository;
+import com.mjm.jpaassociation.onetoone.entities.License;
+import com.mjm.jpaassociation.onetoone.entities.Person;
+import com.mjm.jpaassociation.onetoone.repos.LicenseRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +27,11 @@ public class JpaassociationApplicationTests {
 	@Autowired
 	CustomerRepository repository;
 
+	@Autowired
+	LicenseRepository licenseRespository;
+
+	@Autowired
+	ProgrammerRespository programmerRespository;
 	@Test
 	public void contextLoads() {
 	}
@@ -54,7 +67,7 @@ public class JpaassociationApplicationTests {
 
 	@Test
 	//@Transactional
-	//if you want lazy loading, enable this Transactiona
+	//if you want lazy loading of child entities, enable this Transactiona
 	public void testLoadCustomer(){
 		Customer customer = repository.findOne(5);
 		System.out.println(customer);
@@ -82,5 +95,49 @@ public class JpaassociationApplicationTests {
 		if(customer != null){
 			repository.delete(5);
 		}
+	}
+
+	@Test
+	public void testManyToManyCreateProgramm(){
+		Programmer programmer = new Programmer();
+		programmer.setName("Jimmy Jam");
+		programmer.setSal(10000);
+
+		Set<Project> projects = new HashSet<>();
+		Project p1 = new Project();
+		p1.setName("Java Project 1");
+		projects.add(p1);
+		Project p2 = new Project();
+		p2.setName("Java Project 2");
+		projects.add(p2);
+
+		programmer.setProjects(projects);
+		programmerRespository.save(programmer);
+
+	}
+
+	@Test
+	@Transactional
+	//if you want lazy loading of child projects, enable this Transactiona
+	public void testFindProgrammer(){
+		Programmer p = programmerRespository.findOne(1);
+		System.out.println(p);
+	}
+
+
+	@Test
+	public void testOneToOneCreateLicense(){
+		License license = new License();
+		license.setType("CAR");
+		license.setValidFrom(new Date());
+		license.setValidTo(new Date()); //one day license :=-)
+
+		Person person = new Person();
+		person.setFirstName("Jimmy");
+		person.setLastName("Jam");
+		person.setAge(35);
+
+		license.setPerson(person);
+		licenseRespository.save(license);
 	}
 }
